@@ -41,7 +41,12 @@ via the Media Session API.
 download options (mp3 and FLAC)🔥
 
  vercel link :
- https://the-ultimate-songs-webapp-harsh-patel.vercel.app
+ 
+ https://fastsong.vercel.app
+
+ costum domain :
+ 
+ https://fastsong.eu.org
 
 
 **THE ULTIMATE SONGS is not affiliated with JioSaavn. All trademarks and copyrights belong to their respective owners. All media, images, and songs are the property of their respective owners. This site is for educational purposes only.**
