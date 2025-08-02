@@ -1,5 +1,5 @@
 {
-  "name": "the-ultimate-songs-collection",
+  "name": "fastsong",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -58,6 +58,6 @@
   },
   "description": "![Screenshot 2024-04-21 161657](https://github.com/patelharsh80874/THE-ULTIMATE-SONGS-WEBAPP/assets/110234600/a3ebe5a5-c50c-48ea-b4de-5531846ffeb9)",
   "main": "index.html",
-  "author": "HARSH PATEL",
+  "author": "fastsong",
   "license": "ISC"
 }
