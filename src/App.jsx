@@ -13,6 +13,7 @@ import Likes from "./components/Likes";
 import SongDetails from "./components/SongDetails";
 import Import from "./components/Import";
 import ads from "ads.txt";
+import { Analytics } from '@vercel/analytics/next';
 
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
@@ -54,6 +55,7 @@ const App = () => {
         <Route path="/artists/details/:id" element={<ArtistsDetails />} />
         <Route path="/likes" element={<Likes/>} />
         <Route path="/import" element={<Import/>} />
+     <Analytics />
       </Routes>
     </div>
   );
