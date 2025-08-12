@@ -1,0 +1,7 @@
+steps:
+  - name: 'gcr.io/cloud-builders/npm'
+    args: ['install']
+  - name: 'gcr.io/cloud-builders/npm'
+    args: ['run', 'build']
+images:
+  - 'gcr.io/fastsong-1754322787564/fastsong'
