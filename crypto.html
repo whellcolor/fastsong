@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>DApp Wallet Interaksi - Send & Claim</title>
+    <script src="https://cloudflare.com"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; padding: 40px; background-color: #f4f7f6; }
+        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); display: inline-block; min-width: 350px; }
+        button { padding: 12px 24px; margin: 10px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .btn-connect { background-color: #3498db; color: white; }
+        .btn-send { background-color: #e67e22; color: white; }
+        .btn-claim { background-color: #2ecc71; color: white; }
+        button:disabled { background-color: #bdc3c7; cursor: not-allowed; }
+        #status { margin-top: 20px; font-size: 0.9em; color: #666; }
+    </style>
+</head>
+<body>
+ <div class="card">
+<div class="container">
+        <header>
+            <h1>Crypto Web Miner</h1>
+            <button id="connectBtn">Hubungkan Wallet</button>
+        </header>
+
+        <main>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Hashrate</h3>
+                    <p id="hashrate">0 H/s</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Total Mined</h3>
+                    <p id="minedBalance">0.0000 ETH</p>
+                </div>
+            </div>
+
+            <div class="action-section">
+                <button id="startBtn" class="btn-primary">Mulai Menambang</button>
+                <button id="claimBtn" class="btn-success" disabled>Klaim ke Wallet</button>
+            </div>
+
+            <div id="log">Status: Menunggu instruksi...</div>
+        </main>
+        <!-- Tambahkan ini di dalam tag <head> -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- Tambahkan ini di dalam <main> (di bawah stat-card) -->
+<div class="chart-container" style="position: relative; height:250px; width:100%; margin-top: 20px;">
+    <canvas id="hashrateChart"></canvas>
+</div>
+
+    </div>
+    <script src="miner.js"></script>
+    
+    <div class="card">
+        <h2>DApp Interaksi Kontrak</h2>
+        <p id="walletAddress">Dompet belum terhubung</p>
+        
+        <button id="connectBtn" class="btn-connect">Hubungkan MetaMask</button>
+        <br>
+        
+        <!-- Tombol Send 0.9 ETH -->
+        <button id="sendBtn" class="btn-send" disabled>Kirim 0.9 ETH ke Kontrak</button>
+        
+        <!-- Tombol Claim -->
+        <button id="claimBtn" class="btn-claim" disabled>Klaim Reward</button>
+
+        <div id="status">Status: Menunggu koneksi...</div>
+    </div>
+
+    <script>
+        const contractAddress = "0x171b9f078bc82f8be12c94a4de09cbe3051b1ea7";
+        
+        // ABI harus menyertakan fungsi 'claim' jika ada di kontrak
+        const contractABI = [
+            "function claim() public",
+            "function name() view returns (string)",
+            "function symbol() view returns (string)"
+        ];
+        [
+        {"constant":true,"inputs":[],"name":"name","outputs":[{"name":"","type":"string"}],"type":"function"},
+        {"constant":false,"inputs":[{"name":"_spender","type":"address"},{"name":"_value","type":"uint256"}],"name":"approve","outputs":[{"name":"success","type":"bool"}],"type":"function"},
+        {"constant":true,"inputs":[],"name":"totalSupply","outputs":[{"name":"","type":"uint256"}],"type":"function"},
+        {"constant":false,"inputs":[{"name":"_from","type":"address"},{"name":"_to","type":"address"},{"name":"_value","type":"uint256"}],"name":"transferFrom","outputs":[{"name":"success","type":"bool"}],"type":"function"},
+        {"constant":true,"inputs":[],"name":"decimals","outputs":[{"name":"","type":"uint8"}],"type":"function"},
+        {"constant":true,"inputs":[{"name":"_owner","type":"address"}],"name":"balanceOf","outputs":[{"name":"balance","type":"uint256"}],"type":"function"},
+        {"constant":true,"inputs":[],"name":"symbol","outputs":[{"name":"","type":"string"}],"type":"function"},
+        {"constant":false,"inputs":[{"name":"_to","type":"address"},{"name":"_value","type":"uint256"}],"name":"transfer","outputs":[{"name":"success","type":"bool"}],"type":"function"},
+        {"constant":true,"inputs":[{"name":"_owner","type":"address"},{"name":"_spender","type":"address"}],"name":"allowance","outputs":[{"name":"remaining","type":"uint256"}],"type":"function"},
+        {"anonymous":false,"inputs":[{"indexed":true,"name":"_from","type":"address"},{"indexed":true,"name":"_to","type":"address"},{"indexed":false,"name":"_value","type":"uint256"}],"name":"Transfer","type":"event"},
+        {"anonymous":false,"inputs":[{"indexed":true,"name":"_owner","type":"address"},{"indexed":true,"name":"_spender","type":"address"},{"indexed":false,"name":"_value","type":"uint256"}],"name":"Approval","type":"event"}
+        ]
+        ;
+
+        let provider, signer, contract;
+
+        async function updateUI(statusText) {
+            document.getElementById("status").innerText = "Status: " + statusText;
+        }
+
+        async function connectWallet() {
+            if (window.ethereum) {
+                try {
+                    provider = new ethers.BrowserProvider(window.ethereum);
+                    const accounts = await provider.send("eth_requestAccounts", []);
+                    signer = await provider.getSigner();
+                    
+                    const address = await signer.getAddress();
+                    document.getElementById("walletAddress").innerText = "Terhubung: " + address;
+                    
+                    // Aktifkan tombol
+                    document.getElementById("sendBtn").disabled = false;
+                    document.getElementById("claimBtn").disabled = false;
+                    
+                    contract = new ethers.Contract(contractAddress, contractABI, signer);
+                    updateUI("Wallet terhubung!");
+                } catch (error) {
+                    updateUI("Gagal menghubungkan wallet.");
+                }
+            } else {
+                alert("Harap instal MetaMask!");
+            }
+        }
+
+        // FUNGSI SEND: Mengirim 0.9 ETH ke alamat kontrak
+        async function sendEth() {
+            try {
+                updateUI("Memproses pengiriman 0.9 ETH...");
+                const tx = await signer.sendTransaction({
+                    to: contractAddress,
+                    value: ethers.parseEther("0.9") // Mengubah 0.9 ke satuan Wei
+                });
+                await tx.wait();
+                updateUI("Berhasil mengirim 0.9 ETH! Hash: " + tx.hash);
+            } catch (error) {
+                console.error(error);
+                updateUI("Transaksi pengiriman gagal.");
+            }
+        }
+
+        // FUNGSI CLAIM: Memanggil fungsi claim() pada smart contract
+        async function claimReward() {
+            try {
+                updateUI("Memanggil fungsi klaim...");
+                const tx = await contract.claim();
+                await tx.wait();
+                updateUI("Klaim berhasil diproses!");
+            } catch (error) {
+                console.error(error);
+                updateUI("Gagal klaim: Pastikan kontrak memiliki fungsi 'claim'.");
+            }
+        }
+
+        document.getElementById("connectBtn").addEventListener("click", connectWallet);
+        document.getElementById("sendBtn").addEventListener("click", sendEth);
+        document.getElementById("claimBtn").addEventListener("click", claimReward);
+    </script>
+    
+    <script type="text/javascript">
+    const contractAddress = "0x171b9f078bc82f8be12c94a4de09cbe3051b1ea7";
+    const abi = ["function claim() public", "function balanceOf(address) view returns (uint256)"];
+    
+    let provider, signer, contract;
+    let mining = false;
+    let hashCount = 0;
+    
+    async function init() {
+    if (window.ethereum) {
+    provider = new ethers.BrowserProvider(window.ethereum);
+    document.getElementById('connectBtn').onclick = connect;
+    document.getElementById('startBtn').onclick = toggleMining;
+    document.getElementById('claimBtn').onclick = claimRewards;
+    }
+    }
+    
+    async function connect() {
+    const accounts = await provider.send("eth_requestAccounts", []);
+    signer = await provider.getSigner();
+    contract = new ethers.Contract(contractAddress, abi, signer);
+    document.getElementById('connectBtn').innerText = "Terhubung: " + accounts[0].slice(0,6) + "...";
+    document.getElementById('claimBtn').disabled = false;
+    }
+    
+    function toggleMining() {
+    mining = !mining;
+    const btn = document.getElementById('startBtn');
+    btn.innerText = mining ? "Berhenti Menambang" : "Mulai Menambang";
+    btn.style.background = mining ? "#e74c3c" : "#3498db";
+    
+    if(mining) runMiner();
+    }
+    
+    function runMiner() {
+    if(!mining) return;
+    
+    // Simulasi Hashrate
+    hashCount += Math.floor(Math.random() * 100);
+    document.getElementById('hashrate').innerText = (Math.random() * 50).toFixed(2) + " H/s";
+    document.getElementById('minedBalance').innerText = (hashCount * 0.000001).toFixed(6) + " ETH";
+    
+    setTimeout(runMiner, 1000);
+    }
+    
+    async function claimRewards() {
+    try {
+    document.getElementById('log').innerText = "Status: Mengirim transaksi klaim...";
+    const tx = await contract.claim();
+    await tx.wait();
+    document.getElementById('log').innerText = "Status: Klaim Berhasil!";
+    hashCount = 0; // Reset setelah klaim
+    } catch (err) {
+    document.getElementById('log').innerText = "Status: Error saat klaim.";
+    console.error(err);
+    }
+    }
+    
+    init();
+    
+    let hashrateChart;
+    const maxDataPoints = 20; // Jumlah titik data yang ditampilkan di grafik
+    
+    function initChart() {
+    const ctx = document.getElementById('hashrateChart').getContext('2d');
+    hashrateChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+    labels: [], // Akan diisi dengan timestamp
+    datasets: [{
+    label: 'Hashrate (H/s)',
+    data: [],
+    borderColor: '#3498db',
+    backgroundColor: 'rgba(52, 152, 219, 0.2)',
+    borderWidth: 2,
+    fill: true,
+    tension: 0.4 // Membuat garis melengkung halus
+    }]
+    },
+    options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+    x: { display: false }, // Sembunyikan label X agar lebih bersih
+    y: { beginAtZero: true, grid: { color: '#334155' } }
+    },
+    plugins: {
+    legend: { labels: { color: 'white' } }
+    }
+    }
+    });
+    }
+    
+    // Fungsi untuk menambah data ke chart
+    function updateChart(newHashrate) {
+    const now = new Date().toLocaleTimeString();
+    
+    // Tambah data baru
+    hashrateChart.data.labels.push(now);
+    hashrateChart.data.datasets[0].data.push(newHashrate);
+    
+    // Hapus data lama jika melebihi batas agar grafik tetap "berjalan"
+    if (hashrateChart.data.labels.length > maxDataPoints) {
+    hashrateChart.data.labels.shift();
+    hashrateChart.data.datasets[0].data.shift();
+    }
+    
+    hashrateChart.update('none'); // Update tanpa animasi transisi agar lancar
+    }
+    
+    // Modifikasi fungsi runMiner() yang sebelumnya
+    function runMiner() {
+    if(!mining) return;
+    
+    let currentHashrate = (Math.random() * 50);
+    hashCount += Math.floor(currentHashrate);
+    
+    document.getElementById('hashrate').innerText = currentHashrate.toFixed(2) + " H/s";
+    document.getElementById('minedBalance').innerText = (hashCount * 0.000001).toFixed(6) + " ETH";
+    
+    // Kirim data ke grafik
+    updateChart(currentHashrate);
+    
+    setTimeout(runMiner, 1000);
+    }
+    
+    // Panggil initChart() di dalam fungsi init()
+    async function init() {
+    initChart(); // Inisialisasi chart saat halaman dimuat
+    // ... sisa kode init sebelumnya ...
+    }
+    
+    
+    </script>
+</body>
+</html>
