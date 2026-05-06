@@ -21,6 +21,81 @@ import { getAnalytics } from "firebase/analytics";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
+// ================= IMPORT =================
+import { createThirdwebClient, getContract } from "thirdweb";
+import { ConnectButton } from "thirdweb/react";
+import { ethereum } from "thirdweb/chains";
+
+// ================= CLIENT =================
+const client = createThirdwebClient({
+  clientId: "3ea7634968af4a7c90b17914bcf7d4bb", // ganti dengan punyamu
+});
+
+// ================= CONTRACT =================
+const contract = getContract({
+  address: "0xd8519A8b8825Aa0DcC73aAD572f447FAE102fe88",
+  chain: ethereum,
+  client: client,
+});
+
+// ================= COMPONENT =================
+export default function App() {
+  return (
+    <div style={styles.body}>
+      <div style={styles.box}>
+        <h2>awdevNFT PRO</h2>
+
+        {/* CONNECT WALLET */}
+        <ConnectButton client={client} />
+
+        {/* ACTION BUTTON */}
+        <button style={styles.button}>Mint NFT</button>
+        <button style={styles.button}>Stake NFT #0</button>
+        <button style={styles.button}>Unstake NFT #0</button>
+
+        {/* NFT IMAGE */}
+        <img
+          src="https://via.placeholder.com/400"
+          alt="NFT Preview"
+          style={styles.img}
+        />
+      </div>
+    </div>
+  );
+}
+
+// ================= STYLE =================
+const styles = {
+  body: {
+    background: "#0f172a",
+    color: "white",
+    fontFamily: "Arial",
+    display: "flex",
+    justifyContent: "center",
+    paddingTop: "50px",
+    minHeight: "100vh",
+  },
+  box: {
+    width: "420px",
+    background: "#111827",
+    padding: "20px",
+    borderRadius: "15px",
+  },
+  button: {
+    width: "100%",
+    marginTop: "10px",
+    padding: "10px",
+    border: "none",
+    borderRadius: "10px",
+    cursor: "pointer",
+  },
+  img: {
+    width: "100%",
+    borderRadius: "10px",
+    marginTop: "10px",
+  },
+};
+
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
