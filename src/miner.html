@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Agara Web3 Dashboard</title>
+
+<!-- ✅ Load ethers -->
+<script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
+
+<!-- Chart -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body {
+  font-family: Arial;
+  background: #0f172a;
+  color: white;
+  text-align: center;
+}
+.card {
+  background: #111827;
+  padding: 20px;
+  border-radius: 12px;
+  margin: 10px auto;
+  width: 350px;
+}
+button {
+  padding: 10px;
+  margin: 5px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+  <h2>🚀 Agara Web3</h2>
+
+  <button id="connectBtn">Connect Wallet</button>
+  <p id="wallet">Not connected</p>
+
+  <button id="sendBtn" disabled>Send 0.01 ETH</button>
+  <button id="claimBtn" disabled>Claim Reward</button>
+
+  <p id="status">Status: Idle</p>
+</div>
+
+<div class="card">
+  <h3>Mining Simulator</h3>
+  <p id="hashrate">0 H/s</p>
+  <p id="balance">0 ETH</p>
+
+  <button id="mineBtn">Start Mining</button>
+
+  <canvas id="chart"></canvas>
+</div>
+
+<script>
+const contractAddress = "0x171b9f078bc82f8be12c94a4de09cbe3051b1ea7";
+
+const abi = [
+  "function claim() public"
+];
+
+let provider, signer, contract;
+let mining = false;
+let balance = 0;
+let chart;
+
+// ================= CONNECT =================
+async function connectWallet() {
+  if (!window.ethereum) {
+    alert("Install MetaMask");
+    return;
+  }
+
+  provider = new ethers.BrowserProvider(window.ethereum);
+  await provider.send("eth_requestAccounts", []);
+  signer = await provider.getSigner();
+
+  const addr = await signer.getAddress();
+  document.getElementById("wallet").innerText = addr;
+
+  contract = new ethers.Contract(contractAddress, abi, signer);
+
+  document.getElementById("sendBtn").disabled = false;
+  document.getElementById("claimBtn").disabled = false;
+
+  setStatus("Wallet Connected");
+}
+
+// ================= SEND =================
+async function sendETH() {
+  try {
+    setStatus("Sending...");
+    const tx = await signer.sendTransaction({
+      to: contractAddress,
+      value: ethers.parseEther("0.01") // 🔥 lebih aman
+    });
+
+    await tx.wait();
+    setStatus("Success: " + tx.hash);
+  } catch (err) {
+    setStatus("Failed");
+  }
+}
+
+// ================= CLAIM =================
+async function claim() {
+  try {
+    setStatus("Claiming...");
+    const tx = await contract.claim();
+    await tx.wait();
+    setStatus("Claim Success");
+  } catch {
+    setStatus("Claim Failed");
+  }
+}
+
+// ================= MINER =================
+function toggleMining() {
+  mining = !mining;
+  if (mining) runMiner();
+}
+
+function runMiner() {
+  if (!mining) return;
+
+  const hash = Math.random() * 50;
+  balance += hash * 0.0000001;
+
+  document.getElementById("hashrate").innerText = hash.toFixed(2) + " H/s";
+  document.getElementById("balance").innerText = balance.toFixed(6) + " ETH";
+
+  updateChart(hash);
+
+  setTimeout(runMiner, 1000);
+}
+
+// ================= CHART =================
+function initChart() {
+  const ctx = document.getElementById("chart");
+
+  chart = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: [],
+      datasets: [{
+        data: [],
+        borderColor: "#22c55e"
+      }]
+    }
+  });
+}
+
+function updateChart(val) {
+  chart.data.labels.push("");
+  chart.data.datasets[0].data.push(val);
+
+  if (chart.data.labels.length > 20) {
+    chart.data.labels.shift();
+    chart.data.datasets[0].data.shift();
+  }
+
+  chart.update();
+}
+
+// ================= UI =================
+function setStatus(text) {
+  document.getElementById("status").innerText = "Status: " + text;
+}
+
+// ================= EVENTS =================
+document.getElementById("connectBtn").onclick = connectWallet;
+document.getElementById("sendBtn").onclick = sendETH;
+document.getElementById("claimBtn").onclick = claim;
+document.getElementById("mineBtn").onclick = toggleMining;
+
+// init
+initChart();
+</script>
+
+</body>
+</html>
