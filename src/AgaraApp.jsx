@@ -4,10 +4,13 @@ import { agaraMintNFT } from "./agaraMint";
 import { agaraStakeNFT } from "./agaraStake";
 import { agaraUnstakeNFT } from "./agaraUnstake";
 import { agaraStyles } from "./agaraStyles";
+import AgaraWidgets from "./AgaraWidgets";
 
 export default function AgaraApp() {
   const account = useActiveAccount();
 
+
+  
   return (
     <div style={agaraStyles.body}>
       <div style={agaraStyles.box}>
@@ -37,5 +40,7 @@ export default function AgaraApp() {
         </button>
       </div>
     </div>
+
+    <AgaraWidgets />
   );
 }
