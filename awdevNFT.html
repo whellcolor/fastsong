@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>awdevNFT Pro</title>
+<script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js"></script>
+
+<style>
+body {
+  background:#0f172a;
+  color:white;
+  font-family:Arial;
+  display:flex;
+  justify-content:center;
+  padding-top:50px;
+}
+
+.box {
+  width:420px;
+  background:#111827;
+  padding:20px;
+  border-radius:15px;
+}
+
+button {
+  width:100%;
+  margin-top:10px;
+  padding:10px;
+  border:none;
+  border-radius:10px;
+  cursor:pointer;
+}
+
+img {
+  width:100%;
+  border-radius:10px;
+  margin-top:10px;
+}
+</style>
+</head>
+
+<body>
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+/>
+
+<div class="animate__animated animate__bounceInUp animate__fast">
+
+<div class="box">
+  <h2>awdevNFT PRO</h2>
+
+  <button onclick="connect()">Connect Wallet</button>
+  <button onclick="mint()">Mint NFT</button>
+  <button onclick="stake()">Stake NFT #0</button>
+  <button onclick="unstake()">Unstake NFT #0</button>
+</div>
+  <img id="nft" />
+
+</div>
+</div>
+
+<BridgeWidget client={client} currency="USD" theme="dark" />;
+<BridgeWidget
+  client={client}
+  swap={{
+    prefill: {
+      buyToken: {
+        // Base USDC
+        chainId: 8453,
+        tokenAddress: "0xd8519A8b8825Aa0DcC73aAD572f447FAE102fe88",
+      },
+      sellToken: {
+        // Polygon native token (MATIC)
+        chainId: 137,
+      },
+    },
+  }}
+  buy={{
+    amount: "100",
+    chainId: 8453,
+    tokenAddress: "0xd8519A8b8825Aa0DcC73aAD572f447FAE102fe88",
+    buttonLabel: "Buy USDC",
+  }}
+/>;
+<CheckoutWidget
+  client={client}
+  chain={arbitrum}
+  amount="0.01"
+  seller="0x123...abc"
+  // user will only be able to pay with these tokens
+  supportedTokens={{
+    [8453]: [
+      {
+        address: "0xd8519A8b8825Aa0DcC73aAD572f447FAE102fe88",
+        name: "USDC",
+        symbol: "USDC",
+      },
+    ],
+  }}
+/>;
+<SwapWidget
+  client={client}
+  prefill={{
+    buyToken: {
+      // Base USDC
+      chainId: 8453,
+      tokenAddress: "0xd8519A8b8825Aa0DcC73aAD572f447FAE102fe88",
+    },
+    sellToken: {
+      // Polygon native token (MATIC)
+      chainId: 137,
+    },
+  }}
+/>;
+
+<TransactionWidget
+  client={client}
+  transaction={prepareTransaction({
+    to: "0xd8519A8b8825Aa0DcC73aAD572f447FAE102fe88",
+    chain: ethereum,
+    client: client,
+  })}
+  amount="0.1"
+/>;
+
+<TransactionWidget
+  client={client}
+  transaction={prepareTransaction({
+    to: "0xd8519A8b8825Aa0DcC73aAD572f447FAE102fe88",
+    chain: ethereum,
+    client: client,
+    value: toUnits("0.001", 18),
+  })}
+  connectOptions={{
+    connectModal: {
+      size: "compact",
+      title: "Sign in",
+    },
+  }}
+/>;
+
+<script>
+let signer, contract;
+
+const nftAddress = "NFT_CONTRACT";
+const stakingAddress = "STAKING_CONTRACT";
+
+const nftAbi = [
+  "function mint(address to, string uri)",
+];
+
+const stakeAbi = [
+  "function stake(uint256)",
+  "function unstake(uint256)"
+];
+
+async function connect() {
+  const provider = new ethers.BrowserProvider(window.ethereum);
+  await provider.send("eth_requestAccounts", []);
+
+  signer = await provider.getSigner();
+
+  contract = new ethers.Contract(stakingAddress, stakeAbi, signer);
+}
+
+async function mint() {
+  const nft = new ethers.Contract(nftAddress, nftAbi, signer);
+
+  await nft.mint(
+    await signer.getAddress(),
+    "ipfs://YOUR_METADATA"
+  );
+
+  alert("NFT minted");
+}
+
+async function stake() {
+  await contract.stake(0);
+  alert("NFT staked");
+}
+
+async function unstake() {
+  await contract.unstake(0);
+  alert("unstaked + reward");
+}
+</script>
+
+</body>
+</html> rel='preconnect dns-prefetch'/><link href='//ajax.googleapis.com' rel='preconnect dns-prefetch'/><link href='//resources.blogblog.com' rel='preconnect dns-prefetch'/><link href='//ajax.microsoft.com ' rel='preconnect dns-prefetch'/><link href='//ajax.aspnetcdn.com ' rel='preconnect dns-prefetch'/><link href='//github.com' rel='preconnect dns-prefetch'/><link href='//cdn.rawgit.com' rel='preconnect dns-prefetch'/><link href='//cdnjs.cloudflare.com' rel='preconnect dns-prefetch'/><link href='//www.google-analytics.com' rel='preconnect dns-prefetch'/><link href='//themes.googleusercontent.com ' rel='preconnect dns-prefetch'/><link href='//pagead2.googlesyndication.com' rel='preconnect dns-prefetch'/><link href='//googleads.g.doubleclick.net' rel='preconnect dns-prefetch'/><link href='//www.gstatic.com' rel='preconnect dns-prefetch'/><link href='//www.googletagservices.com' rel='preconnect dns-prefetch'/><link href='//static.xx.fbcdn.net' rel='preconnect dns-prefetch'/><link href='//tpc.googlesyndication.com' rel='preconnect dns-prefetch'/><link href='//apis.google.com' rel='preconnect dns-prefetch'/><link href='//www.w3.org' rel='preconnect dns-prefetch'/><link href='//www.facebook.com' rel='preconnect dns-prefetch'/><link href='//connect.facebook.net' rel='preconnect dns-prefetch'/><link href='//disqus.com' rel='preconnect dns-prefetch'/><link href='//plus.google.com' rel='preconnect dns-prefetch'/><link href='//twitter.com' rel='preconnect dns-prefetch'/><link href='//platform.twitter.com' rel='preconnect dns-prefetch'/><link href='//syndication.twitter.com' rel='preconnect dns-prefetch'/><link href='//r.twimg.com ' rel='preconnect dns-prefetch'/><link href='//p.twitter.com ' rel='preconnect dns-prefetch'/><link href='//cdn.api.twitter.com ' rel='preconnect dns-prefetch'/><link href='//www.youtube.com' rel='preconnect dns-prefetch'/><link href='//img.youtube.com' rel='preconnect dns-prefetch'/><link href='//www.pinterest.com' rel='preconnect dns-prefetch'/><link href='//statically.io/' rel='preconnect dns-prefetch'/><link href='//www.linkedin.com' rel='preconnect dns-prefetch'/><link href='//player.vimeo.com' rel='preconnect dns-prefetch'/><link href='//s3.amazonaws.com ' rel='preconnect dns-prefetch'/><link href='//s3.buysellads.com ' rel='preconnect dns-prefetch'/><link href='//stats.buysellads.com ' rel='preconnect dns-prefetch'/><link href='//cdn.adpacks.' rel='preconnect dns-prefetch'/>
+
+<img data-aos="animate__animated animate__bounce animate__faster" 
+<style>
+body {
+  background:#0f172a;
+  color:white;
+  font-family:Arial;
+  display:flex;
+  justify-content:center;
+  padding-top:50px;
+}
+
+.box {
+  width:420px;
+  background:#111827;
+  padding:20px;
+  border-radius:15px;
+}
+
+button {
+  width:100%;
+  margin-top:10px;
+  padding:10px;
+  border:none;
+  border-radius:10px;
+  cursor:pointer;
+}
+
+img {
+  width:100%;
+  border-radius:10px;
+  margin-top:10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+  <h2>awdevNFT PRO</h2>
+
+  <button onclick="connect()">Connect Wallet</button>
+  <button onclick="mint()">Mint NFT</button>
+  <button onclick="stake()">Stake NFT #0</button>
+  <button onclick="unstake()">Unstake NFT #0</button>
+
+  <img id="nft" />
+
+</div>
+
+<script>
+let signer, contract;
+
+const nftAddress = "NFT_CONTRACT";
+const stakingAddress = "STAKING_CONTRACT";
+
+const nftAbi = [
+  "function mint(address to, string uri)",
+];
+
+const stakeAbi = [
+  "function stake(uint256)",
+  "function unstake(uint256)"
+];
+
+async function connect() {
+  const provider = new ethers.BrowserProvider(window.ethereum);
+  await provider.send("eth_requestAccounts", []);
+
+  signer = await provider.getSigner();
+
+  contract = new ethers.Contract(stakingAddress, stakeAbi, signer);
+}
+
+async function mint() {
+  const nft = new ethers.Contract(nftAddress, nftAbi, signer);
+
+  await nft.mint(
+    await signer.getAddress(),
+    "ipfs://YOUR_METADATA"
+  );
+
+  alert("NFT minted");
+}
+
+async function stake() {
+  await contract.stake(0);
+  alert("NFT staked");
+}
+
+async function unstake() {
+  await contract.unstake(0);
+  alert("unstaked + reward");
+}
+</script>
+
+</body>
+</html>
+
+import { createThirdwebClient } from "thirdweb";
+
+const client = createThirdwebClient({
+  secretKey: "G8vNXJOMTp_TuTQV3kgFIQyKAz_L21F3a9SW57zKanPEqK7iGCHyTUcHKuujJR1q3G2h7d4VHaIlDeR3yn0Wjw", // Use secret key if using on the server, get it from dashboard settings
+});
+
+import { createThirdwebClient } from "thirdweb";
+
+const client = createThirdwebClient({
+  clientKey: "3ea7634968af4a7c90b17914bcf7d4bb", // Use client id if using on the client side, get it from dashboard settings
+});
+
+
+function AccountBlobbie(
+  props: Omit<BlobbieProps, "address">,
+): Element;
+import {
+  AccountProvider,
+  AccountAvatar,
+  AccountName,
+  AccountAddress,
+} from "thirdweb/react";
+
+<AccountProvider address="0xd8519A8b8825Aa0DcC73aAD572f447FAE102fe88" client={client}>
+  <AccountAvatar />
+  <AccountName />
+  <AccountAddress />
+</AccountProvider>;
+
+import { Blobbie } from "thirdweb/react";
+
+<Blobbie address="0xd8519A8b8825Aa0DcC73aAD572f447FAE102fe88" className="w-10 h-10" />;
+
+import { SocialIcon } from "thirdweb/react";
+
+<SocialIcon provider="google" />;
+
+import {
+  WalletProvider,
+  WalletIcon,
+  WalletName,
+} from "thirdweb/react";
+
+<WalletProvider id="io.metamask">
+  <WalletIcon />
+  <WalletName />
+</WalletProvider>;
+
+import { createThirdwebClient } from "thirdweb";
+import { ConnectButton } from "thirdweb/react";
+
+const client = createThirdwebClient({ clientId: "3ea7634968af4a7c90b17914bcf7d4bb" });
+
+<ConnectButton client={client} />;
+
+
+import { getContract } from "thirdweb";
+import {
+  NFTProvider,
+  NFTMedia,
+  NFTDescription,
+  NFTName,
+} from "thirdweb/react";
+
+const contract = getContractrgb(255,255,255)
+  address: "0xd8519A8b8825Aa0DcC73aAD572f447FAE102fe88",
+  chain: ethereum,
+  client: yourThirdwebClient,
+});
+
+<NFTProvider contract={contract} tokenId={0n}>
+  <NFTMedia />
+  <NFTDescription />
+  <NFTName />
+</NFTProvider>;
+
+
+import { TokenProvider, TokenIcon, TokenName  } from "thirdweb/react";
+import { ethereum } from "thirdweb/chains";
+
+<TokenProvider address="0xd8519A8b8825Aa0DcC73aAD572f447FAE102fe88" client={...} chain={ethereum}>
+  <TokenIcon />
+  <TokenName />
+</TokenProvider>
+import { AccountProvider, AccountAddress } from "thirdweb/react";
+
+<AccountProvider
+  address="0xd8519A8b8825Aa0DcC73aAD572f447FAE102fe88"
+  client={TW_CLIENT}
+>
+  <AccountAddress />
+</AccountProvider>;
+
+
+import { ethereum } from "thirdweb/chains";
+
+<BuyWidget
+  client={client}
+  chain={ethereum}
+  amount="0.1" //    native tokens (ie. ETH)
+/>;
